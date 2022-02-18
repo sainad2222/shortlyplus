@@ -1,0 +1,48 @@
+syntax = "proto3";
+package main;
+
+option go_package = "./apiPb";
+
+service Shortener {
+    // shortenURL takes url and slug(optional) for request
+    // and returns url and slug in response
+    rpc shortenURL(shortenURLRequest) returns(shortenURLResponse) {};
+}
+
+message shortenURLRequest {
+    string url = 1;
+    string slug = 2;
+}
+
+message shortenURLResponse {
+    string shortURL = 1;
+    string error = 2;
+}
+
+service Database {
+    // checkIfPresent checks if slug is already present in DB
+    // takes slug as request and returns bool as response
+    rpc checkIfPresent(checkIfPresentRequest) returns(checkIfPresentResponse) {};
+    // storeInDB stores in Database
+    // takes url and slug in request and returns Status
+    rpc storeInDB(storeInDBRequest) returns(storeInDBResponse) {}
+}
+
+message checkIfPresentRequest {
+    string slug = 1;
+}
+
+message checkIfPresentResponse {
+    bool isPresent = 1;
+    string error = 2;
+}
+
+message storeInDBRequest {
+    string url = 1;
+    string slug = 2;
+}
+
+message storeInDBResponse {
+    bool isSuccess = 1;
+    string error = 2;
+}
