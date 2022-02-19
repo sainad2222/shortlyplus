@@ -17,13 +17,13 @@ class ShortenService(api_pb2_grpc.ShortenerServicer):
         url, error = self.validateURL(url)
         if error:
             result = {"error": error}
-            return api_pb2.checkIfPresentResponse(**result)
+            return api_pb2.shortenURLResponse(**result)
         slug = request.slug
         stub = self.create_stub_DB()
         if slug:
             if len(slug) < 6:
                 result = {"error": "Slug should be atleast 6 characters"}
-                return api_pb2.checkIfPresentResponse(**result)
+                return api_pb2.shortenURLResponse(**result)
             res = stub.checkIfPresent(api_pb2.checkIfPresentRequest(slug=slug))
             if res.error:
                 return api_pb2.shortenURLResponse(**res)
