@@ -42,7 +42,7 @@ class ShortenService(api_pb2_grpc.ShortenerServicer):
         return api_pb2.shortenURLResponse(**result)
 
     def create_stub_DB(self):
-        channel = grpc.insecure_channel('localhost:50052')
+        channel = grpc.insecure_channel('db:50052')
         stub = api_pb2_grpc.DatabaseStub(channel)
         return stub
 
@@ -78,10 +78,10 @@ def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     api_pb2_grpc.add_ShortenerServicer_to_server(ShortenService(), server)
     server.add_insecure_port('[::]:50051')
+    print("[INFO] started listening on port 50051")
     server.start()
     server.wait_for_termination()
 
 
 if __name__ == '__main__':
-    print("[INFO] started listening on port 50051")
     serve()

@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  shortener:
+    build:
+      context: backend/shortener
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - backend
+    stdin_open: true
+    tty: true
+
+  db:
+    build:
+      context: backend/db
+      dockerfile: Dockerfile
+    ports:
+      - "50052:50052"
+    restart: unless-stopped
+    networks:
+      - backend
+
+networks:
+  backend:
