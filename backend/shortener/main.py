@@ -13,6 +13,7 @@ class ShortenService(api_pb2_grpc.ShortenerServicer):
         pass
 
     def shortenURL(self, request, context):
+        print("[INFO] hit shortenURL RPC")
         url = request.url
         url, error = self.validateURL(url)
         if error:

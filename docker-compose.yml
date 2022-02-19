@@ -25,5 +25,19 @@ services:
     networks:
       - backend
 
+  client:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    restart: unless-stopped
+    networks:
+      - backend
+    depends_on:
+      - shortener
+    stdin_open: true
+    tty: true
+
 networks:
   backend:

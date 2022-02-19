@@ -14,6 +14,7 @@ type server struct {
 }
 
 func (s *server) CheckIfPresent(ctx context.Context, req *apiPb.CheckIfPresentRequest) (*apiPb.CheckIfPresentResponse, error) {
+	log.Println("[INFO] hit checkIfPresent RPC")
 	dbClient, err := SetupDB()
 	if err != nil {
 		return &apiPb.CheckIfPresentResponse{Error: "Cannot connect to DB client"}, err
@@ -41,6 +42,7 @@ func (s *server) CheckIfPresent(ctx context.Context, req *apiPb.CheckIfPresentRe
 }
 
 func (s *server) StoreInDB(ctx context.Context, req *apiPb.StoreInDBRequest) (*apiPb.StoreInDBResponse, error) {
+	log.Println("[INFO] hit StoreInDB RPC")
 	dbClient, err := SetupDB()
 	if err != nil {
 		return &apiPb.StoreInDBResponse{Error: "Cannot connect to DB client"}, err
