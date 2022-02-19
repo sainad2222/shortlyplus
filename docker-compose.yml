@@ -36,6 +36,7 @@ services:
       - backend
     depends_on:
       - shortener
+      - db
     stdin_open: true
     tty: true
 

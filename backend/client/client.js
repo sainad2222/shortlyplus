@@ -1,17 +1,37 @@
 const express = require("express")
-const client = require("./grpc")
+const { shortenerClient, dbClient } = require("./grpc")
 const bodyParser = require("body-parser")
 
 const app = express()
 
 app.use(bodyParser.json())
-app.post('/', (req, res) => {
-    client.shortenURL(req.body, (err, result) => {
+app.post('/', async (req, res) => {
+    await shortenerClient.shortenURL(req.body, (err, result) => {
         if (err) {
             console.log("[ERROR]", err)
-            res.json(err)
+            return res.json(err)
+        }
+        resErr = result.error
+        if (resErr) {
+            console.log("[ERROR]", resErr)
+            return res.json(resErr)
         }
         res.json(result)
+    })
+})
+
+app.get('/:slug', async (req, res) => {
+    await dbClient.fetchURLFromSlug({ "slug": req.params.slug }, (err, result) => {
+        if (err) {
+            console.log("[ERROR]", err)
+            return res.json(err)
+        }
+        resErr = result.error
+        if (resErr) {
+            console.log("[ERROR]", resErr)
+            return res.json(resErr)
+        }
+        res.redirect(result.URL)
     })
 })
 

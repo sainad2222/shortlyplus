@@ -103,6 +103,8 @@ type DatabaseClient interface {
 	// storeInDB stores in Database
 	// takes url and slug in request and returns Status
 	StoreInDB(ctx context.Context, in *StoreInDBRequest, opts ...grpc.CallOption) (*StoreInDBResponse, error)
+	// fetchURLFromSlug takes slug and returns full shortlink
+	FetchURLFromSlug(ctx context.Context, in *FetchURLFromSlugRequest, opts ...grpc.CallOption) (*FetchURLFromSlugResponse, error)
 }
 
 type databaseClient struct {
@@ -131,6 +133,15 @@ func (c *databaseClient) StoreInDB(ctx context.Context, in *StoreInDBRequest, op
 	return out, nil
 }
 
+func (c *databaseClient) FetchURLFromSlug(ctx context.Context, in *FetchURLFromSlugRequest, opts ...grpc.CallOption) (*FetchURLFromSlugResponse, error) {
+	out := new(FetchURLFromSlugResponse)
+	err := c.cc.Invoke(ctx, "/main.Database/fetchURLFromSlug", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatabaseServer is the server API for Database service.
 // All implementations must embed UnimplementedDatabaseServer
 // for forward compatibility
@@ -141,6 +152,8 @@ type DatabaseServer interface {
 	// storeInDB stores in Database
 	// takes url and slug in request and returns Status
 	StoreInDB(context.Context, *StoreInDBRequest) (*StoreInDBResponse, error)
+	// fetchURLFromSlug takes slug and returns full shortlink
+	FetchURLFromSlug(context.Context, *FetchURLFromSlugRequest) (*FetchURLFromSlugResponse, error)
 	mustEmbedUnimplementedDatabaseServer()
 }
 
@@ -153,6 +166,9 @@ func (*UnimplementedDatabaseServer) CheckIfPresent(context.Context, *CheckIfPres
 }
 func (*UnimplementedDatabaseServer) StoreInDB(context.Context, *StoreInDBRequest) (*StoreInDBResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreInDB not implemented")
+}
+func (*UnimplementedDatabaseServer) FetchURLFromSlug(context.Context, *FetchURLFromSlugRequest) (*FetchURLFromSlugResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FetchURLFromSlug not implemented")
 }
 func (*UnimplementedDatabaseServer) mustEmbedUnimplementedDatabaseServer() {}
 
@@ -196,6 +212,24 @@ func _Database_StoreInDB_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Database_FetchURLFromSlug_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchURLFromSlugRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatabaseServer).FetchURLFromSlug(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Database/FetchURLFromSlug",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatabaseServer).FetchURLFromSlug(ctx, req.(*FetchURLFromSlugRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Database_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "main.Database",
 	HandlerType: (*DatabaseServer)(nil),
@@ -207,6 +241,10 @@ var _Database_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "storeInDB",
 			Handler:    _Database_StoreInDB_Handler,
+		},
+		{
+			MethodName: "fetchURLFromSlug",
+			Handler:    _Database_FetchURLFromSlug_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

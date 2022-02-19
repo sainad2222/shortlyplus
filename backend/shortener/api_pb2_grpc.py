@@ -87,6 +87,11 @@ class DatabaseStub(object):
                 request_serializer=api__pb2.storeInDBRequest.SerializeToString,
                 response_deserializer=api__pb2.storeInDBResponse.FromString,
                 )
+        self.fetchURLFromSlug = channel.unary_unary(
+                '/main.Database/fetchURLFromSlug',
+                request_serializer=api__pb2.fetchURLFromSlugRequest.SerializeToString,
+                response_deserializer=api__pb2.fetchURLFromSlugResponse.FromString,
+                )
 
 
 class DatabaseServicer(object):
@@ -108,6 +113,13 @@ class DatabaseServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def fetchURLFromSlug(self, request, context):
+        """fetchURLFromSlug takes slug and returns full shortlink
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DatabaseServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -120,6 +132,11 @@ def add_DatabaseServicer_to_server(servicer, server):
                     servicer.storeInDB,
                     request_deserializer=api__pb2.storeInDBRequest.FromString,
                     response_serializer=api__pb2.storeInDBResponse.SerializeToString,
+            ),
+            'fetchURLFromSlug': grpc.unary_unary_rpc_method_handler(
+                    servicer.fetchURLFromSlug,
+                    request_deserializer=api__pb2.fetchURLFromSlugRequest.FromString,
+                    response_serializer=api__pb2.fetchURLFromSlugResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -162,5 +179,22 @@ class Database(object):
         return grpc.experimental.unary_unary(request, target, '/main.Database/storeInDB',
             api__pb2.storeInDBRequest.SerializeToString,
             api__pb2.storeInDBResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def fetchURLFromSlug(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/main.Database/fetchURLFromSlug',
+            api__pb2.fetchURLFromSlugRequest.SerializeToString,
+            api__pb2.fetchURLFromSlugResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -26,6 +26,8 @@ service Database {
     // storeInDB stores in Database
     // takes url and slug in request and returns Status
     rpc storeInDB(storeInDBRequest) returns(storeInDBResponse) {}
+    // fetchURLFromSlug takes slug and returns full shortlink
+    rpc fetchURLFromSlug(fetchURLFromSlugRequest) returns(fetchURLFromSlugResponse) {}
 }
 
 message checkIfPresentRequest {
@@ -44,5 +46,14 @@ message storeInDBRequest {
 
 message storeInDBResponse {
     bool isSuccess = 1;
+    string error = 2;
+}
+
+message fetchURLFromSlugRequest {
+    string slug = 1;
+}
+
+message fetchURLFromSlugResponse {
+    string URL = 1;
     string error = 2;
 }

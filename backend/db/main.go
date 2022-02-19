@@ -17,7 +17,7 @@ func (s *server) CheckIfPresent(ctx context.Context, req *apiPb.CheckIfPresentRe
 	log.Println("[INFO] hit checkIfPresent RPC")
 	dbClient, err := SetupDB()
 	if err != nil {
-		return &apiPb.CheckIfPresentResponse{Error: "Cannot connect to DB client"}, err
+		return &apiPb.CheckIfPresentResponse{Error: "Cannot connect to DB client"}, nil
 	}
 	defer dbClient.Close()
 	slug := req.GetSlug()
@@ -45,23 +45,49 @@ func (s *server) StoreInDB(ctx context.Context, req *apiPb.StoreInDBRequest) (*a
 	log.Println("[INFO] hit StoreInDB RPC")
 	dbClient, err := SetupDB()
 	if err != nil {
-		return &apiPb.StoreInDBResponse{Error: "Cannot connect to DB client"}, err
+		return &apiPb.StoreInDBResponse{Error: "Cannot connect to DB client"}, nil
 	}
 	defer dbClient.Close()
 	url := req.GetUrl()
 	slug := req.GetSlug()
-	log.Println("[INFO]", url, slug)
 	_, _, err = dbClient.Collection("urls").Add(ctx, map[string]interface{}{
 		"url":  url,
 		"slug": slug,
 	})
 	if err != nil {
 		log.Fatalln("[ERROR] cannot insert data into db")
-		return &apiPb.StoreInDBResponse{Error: "Cannot insert data into db"}, err
+		return &apiPb.StoreInDBResponse{Error: "Cannot insert data into db"}, nil
 	}
 	return &apiPb.StoreInDBResponse{
 		IsSuccess: true,
 	}, nil
+}
+
+type shortURL struct {
+	Url  string `firestore:"url,omitempty"`
+	Slug string `firestore:"slug,omitempty"`
+}
+
+func (s *server) FetchURLFromSlug(ctx context.Context, req *apiPb.FetchURLFromSlugRequest) (*apiPb.FetchURLFromSlugResponse, error) {
+	log.Println("[INFO] hit FetchURLFromSlug RPC")
+	dbClient, err := SetupDB()
+	if err != nil {
+		return &apiPb.FetchURLFromSlugResponse{Error: "Cannot connect to DB client"}, nil
+	}
+	defer dbClient.Close()
+	slug := req.GetSlug()
+	iter := dbClient.Collection("urls").Where("slug", "==", slug).Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			return &apiPb.FetchURLFromSlugResponse{Error: "Slug not present in DB"}, nil
+		}
+		var url shortURL
+		if err := doc.DataTo(&url); err != nil {
+			return &apiPb.FetchURLFromSlugResponse{Error: "Error converting to struct"}, nil
+		}
+		return &apiPb.FetchURLFromSlugResponse{URL: url.Url}, nil
+	}
 }
 
 func main() {
