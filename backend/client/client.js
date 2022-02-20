@@ -1,10 +1,13 @@
 const express = require("express")
 const { shortenerClient, dbClient } = require("./grpc")
 const bodyParser = require("body-parser")
+const cors = require("cors")
 
 const app = express()
 
 app.use(bodyParser.json())
+app.use(cors())
+
 app.post('/', async (req, res) => {
     await shortenerClient.shortenURL(req.body, (err, result) => {
         if (err) {
