@@ -4,7 +4,7 @@ overkill version of [shortlyyy](https://github.com/sainad2222/shortLY)
 ## URL Shortener designed with Microservices architecture
 
 ### System Architecture
-![](https://user-images.githubusercontent.com/44405294/154860967-914d7ae1-cc97-48e4-b647-6d97988455ad.png)
+![](https://user-images.githubusercontent.com/44405294/155005627-a98039b9-2f9f-4030-a411-1e432cfb0621.png)
 
 ### Project structure
 - frontend -> **React**
