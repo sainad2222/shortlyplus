@@ -25,12 +25,13 @@ function App() {
         url: term,
       };
     }
+    const serverURL = process.env.REACT_APP_SERVER || "http://localhost:8084"
     try {
-      const res = await axios.post("http://localhost:8084", req);
+      const res = await axios.post(serverURL, req);
       console.log(res.data);
       setTerm("");
       setSlug("");
-      setShort("http://localhost:8084/"+res.data.shortURL);
+      setShort(serverURL+"/"+res.data.shortURL);
       setError("");
     } catch (err) {
       console.log(err);
