@@ -28,7 +28,6 @@ function App() {
     const serverURL = process.env.REACT_APP_SERVER || "http://localhost:8084"
     try {
       const res = await axios.post(serverURL, req);
-      console.log(res.data);
       setTerm("");
       setSlug("");
       setShort(serverURL+"/"+res.data.shortURL);
@@ -58,7 +57,7 @@ function App() {
       return (
         <div className="message">
           <h4>
-            Short link: <a href={short}>{short}</a>
+            Short link: <a href={short} target="_blank" rel="noopener noreferrer">{short}</a>
           </h4>
         </div>
       );
