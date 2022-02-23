@@ -25,7 +25,7 @@ func (s *server) createDBClient() {
 	s.dbClient = dbClient
 	s.dbErr = err
     collection,isEnvSet := os.LookupEnv("DB_COLLECTION")
-    if isEnvSet {
+    if isEnvSet && collection != "" {
         s.collection = collection
     } else {
         s.collection = "urls"
