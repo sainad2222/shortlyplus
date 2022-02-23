@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button, Form, Spinner } from "react-bootstrap";
 import "./index.css";
 
@@ -10,6 +10,22 @@ function App() {
     const [short, setShort] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(0);
+    const [urls, setUrls] = useState([]);
+
+    const mounted = useRef();
+    useEffect(() => {
+        if (!mounted.current) {
+            // do componentDidMount logic
+            var Urls = localStorage.getItem("urls")
+            if (Urls) {
+                setUrls(JSON.parse(Urls))
+            }
+            mounted.current = true;
+        } else {
+            // do componentDidUpdate logic
+            localStorage.setItem("urls", JSON.stringify(urls))
+        }
+    }, [urls]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -35,8 +51,11 @@ function App() {
             else {
                 setTerm("");
                 setSlug("");
-                setShort(serverURL + "/" + res.data.shortURL);
+                const shorty = serverURL + "/" + res.data.shortURL
+                setShort(shorty);
                 setError("");
+                var newUrls = [...urls, { shortURL: shorty }]
+                setUrls(newUrls)
             }
         } catch (err) {
             console.log(err);
@@ -94,6 +113,17 @@ function App() {
         }
     };
 
+    const renderURLS = () => {
+        var urlsList = urls.map(function (url, index) {
+            return <li key={index}>{url.shortURL}</li>;
+        })
+        return (
+            <ul>
+                {urlsList}
+            </ul>
+        )
+    }
+
     const renderSlug = () => {
         if (toggle) {
             return (
@@ -149,6 +179,8 @@ function App() {
             {renderSpinner()}
             {renderShort()}
             {renderError()}
+            <p>History:</p>
+            {renderURLS()}
         </div>
     );
 }
