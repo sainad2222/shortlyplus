@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	"cloud.google.com/go/firestore"
 
@@ -16,12 +17,19 @@ type server struct {
 	apiPb.UnimplementedDatabaseServer
 	dbClient *firestore.Client
 	dbErr    error
+    collection string
 }
 
 func (s *server) createDBClient() {
 	dbClient, err := SetupDB()
 	s.dbClient = dbClient
 	s.dbErr = err
+    collection,isEnvSet := os.LookupEnv("DB_COLLECTION")
+    if isEnvSet {
+        s.collection = collection
+    } else {
+        s.collection = "urls"
+    }
 }
 
 func (s *server) CheckIfPresent(ctx context.Context, req *apiPb.CheckIfPresentRequest) (*apiPb.CheckIfPresentResponse, error) {
@@ -30,7 +38,7 @@ func (s *server) CheckIfPresent(ctx context.Context, req *apiPb.CheckIfPresentRe
 		return &apiPb.CheckIfPresentResponse{Error: "Cannot connect to DB client"}, nil
 	}
 	slug := req.GetSlug()
-	iter := s.dbClient.Collection("urls").Where("slug", "==", slug).Documents(ctx)
+	iter := s.dbClient.Collection(s.collection).Where("slug", "==", slug).Documents(ctx)
 	docCount := 0
 	for {
 		_, err := iter.Next()
@@ -57,7 +65,7 @@ func (s *server) StoreInDB(ctx context.Context, req *apiPb.StoreInDBRequest) (*a
 	}
 	url := req.GetUrl()
 	slug := req.GetSlug()
-	_, _, err := s.dbClient.Collection("urls").Add(ctx, map[string]interface{}{
+	_, _, err := s.dbClient.Collection(s.collection).Add(ctx, map[string]interface{}{
 		"url":  url,
 		"slug": slug,
 	})
@@ -81,7 +89,7 @@ func (s *server) FetchURLFromSlug(ctx context.Context, req *apiPb.FetchURLFromSl
 		return &apiPb.FetchURLFromSlugResponse{Error: "Cannot connect to DB client"}, nil
 	}
 	slug := req.GetSlug()
-	iter := s.dbClient.Collection("urls").Where("slug", "==", slug).Documents(ctx)
+	iter := s.dbClient.Collection(s.collection).Where("slug", "==", slug).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err != nil {
