@@ -77,6 +77,10 @@ function App() {
         setToggle(!toggle);
     };
 
+    const handleClear = (event) => {
+        setUrls([])
+    }
+
     const renderShort = () => {
         if (short !== "") {
             return (
@@ -114,13 +118,24 @@ function App() {
     };
 
     const renderURLS = () => {
+        console.log(urls)
+        if (urls.length === 0) {
+            return <div></div>
+        }
         var urlsList = urls.map(function (url, index) {
-            return <li key={index}>{url.shortURL}</li>;
+            return <tr><th scope="row"><td><a href={url.shortURL} target="_blank" rel="noopener noreferrer">{url.shortURL}</a></td></th></tr>;
         })
         return (
-            <ul>
-                {urlsList}
-            </ul>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th scope="col">History: <Button variant="danger" onClick={handleClear}>clear</Button></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {urlsList}
+                </tbody>
+            </table>
         )
     }
 
@@ -179,7 +194,6 @@ function App() {
             {renderSpinner()}
             {renderShort()}
             {renderError()}
-            <p>History:</p>
             {renderURLS()}
         </div>
     );
