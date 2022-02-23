@@ -2,26 +2,35 @@ package main
 
 import (
 	"context"
-	"db/apiPb"
 	"log"
 	"net"
+
+	"cloud.google.com/go/firestore"
+
+	"db/apiPb"
 
 	"google.golang.org/grpc"
 )
 
 type server struct {
 	apiPb.UnimplementedDatabaseServer
+	dbClient *firestore.Client
+	dbErr    error
+}
+
+func (s *server) createDBClient() {
+	dbClient, err := SetupDB()
+	s.dbClient = dbClient
+	s.dbErr = err
 }
 
 func (s *server) CheckIfPresent(ctx context.Context, req *apiPb.CheckIfPresentRequest) (*apiPb.CheckIfPresentResponse, error) {
 	log.Println("[INFO] hit checkIfPresent RPC")
-	dbClient, err := SetupDB()
-	if err != nil {
+	if s.dbErr != nil {
 		return &apiPb.CheckIfPresentResponse{Error: "Cannot connect to DB client"}, nil
 	}
-	defer dbClient.Close()
 	slug := req.GetSlug()
-	iter := dbClient.Collection("urls").Where("slug", "==", slug).Documents(ctx)
+	iter := s.dbClient.Collection("urls").Where("slug", "==", slug).Documents(ctx)
 	docCount := 0
 	for {
 		_, err := iter.Next()
@@ -43,14 +52,12 @@ func (s *server) CheckIfPresent(ctx context.Context, req *apiPb.CheckIfPresentRe
 
 func (s *server) StoreInDB(ctx context.Context, req *apiPb.StoreInDBRequest) (*apiPb.StoreInDBResponse, error) {
 	log.Println("[INFO] hit StoreInDB RPC")
-	dbClient, err := SetupDB()
-	if err != nil {
+	if s.dbErr != nil {
 		return &apiPb.StoreInDBResponse{Error: "Cannot connect to DB client"}, nil
 	}
-	defer dbClient.Close()
 	url := req.GetUrl()
 	slug := req.GetSlug()
-	_, _, err = dbClient.Collection("urls").Add(ctx, map[string]interface{}{
+	_, _, err := s.dbClient.Collection("urls").Add(ctx, map[string]interface{}{
 		"url":  url,
 		"slug": slug,
 	})
@@ -70,13 +77,11 @@ type shortURL struct {
 
 func (s *server) FetchURLFromSlug(ctx context.Context, req *apiPb.FetchURLFromSlugRequest) (*apiPb.FetchURLFromSlugResponse, error) {
 	log.Println("[INFO] hit FetchURLFromSlug RPC")
-	dbClient, err := SetupDB()
-	if err != nil {
+	if s.dbErr != nil {
 		return &apiPb.FetchURLFromSlugResponse{Error: "Cannot connect to DB client"}, nil
 	}
-	defer dbClient.Close()
 	slug := req.GetSlug()
-	iter := dbClient.Collection("urls").Where("slug", "==", slug).Documents(ctx)
+	iter := s.dbClient.Collection("urls").Where("slug", "==", slug).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err != nil {
@@ -98,7 +103,9 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	apiPb.RegisterDatabaseServer(grpcServer, &server{})
+	s := server{}
+	s.createDBClient()
+	apiPb.RegisterDatabaseServer(grpcServer, &s)
 
 	log.Println("[INFO] started listening on port 50052")
 	if err := grpcServer.Serve(lis); err != nil {
