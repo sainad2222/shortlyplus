@@ -3,6 +3,9 @@ overkill version of [shortlyyy](https://github.com/sainad2222/shortLY)
 
 ## URL Shortener designed with Microservices architecture
 
+### Preview
+![shortly](https://user-images.githubusercontent.com/44405294/155786339-fba50240-5408-45e2-8c47-87de313eadfb.gif)
+
 ### System Architecture
 ![](https://user-images.githubusercontent.com/44405294/155006296-9a001c67-3479-4346-93dc-7c5a18831d63.png)
 
@@ -28,8 +31,7 @@ overkill version of [shortlyyy](https://github.com/sainad2222/shortLY)
   `git clone https://github.com/sainad2222/shortlyplus.git`
 
 2. cd into directory and run 
-  `docker-compose up`
- 
+  `docker-compose up --build`
 
 ### TODO
 - [ ] Add Redis layer for db service(go server)
